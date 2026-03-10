@@ -84,7 +84,7 @@ def _build_html(post: dict, photo_b64: str) -> str:
         '.poster { width: 1080px; height: 1080px; position: relative; display: flex; flex-direction: column; }\n'
         '.bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }\n'
         '.overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%;\n'
-        '  background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.25) 65%, rgba(0,0,0,0.85) 100%); }\n'
+        '  background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.3) 55%, rgba(0,0,0,0.9) 100%); }\n'
         '.top { position: absolute; top: 0; left: 0; right: 0; z-index: 2;\n'
         '  padding: 36px 48px; display: flex; align-items: center; justify-content: space-between; }\n'
         '.logo { display: flex; align-items: center; gap: 12px; }\n'
