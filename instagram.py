@@ -48,8 +48,9 @@ def upload_and_post(image_path: str, caption: str) -> bool:
 
         logger.info(f"Container created: {container_id}")
 
-        # Step 2: Wait for media to be ready
-        for attempt in range(12):  # max 60 seconds
+        # Step 2: Wait for media to be ready (Instagram needs time to process)
+        for attempt in range(30):  # max 150 seconds
+            time.sleep(5)  # Always wait before checking
             r = client.get(
                 f"https://graph.facebook.com/v21.0/{container_id}",
                 params={
@@ -58,16 +59,17 @@ def upload_and_post(image_path: str, caption: str) -> bool:
                 },
             )
             status = r.json()
+            status_code = status.get("status_code", "UNKNOWN")
+            logger.info(f"Media status (attempt {attempt+1}): {status_code}")
             
-            if status.get("status_code") == "FINISHED":
+            if status_code == "FINISHED":
                 break
-            elif status.get("status_code") == "ERROR":
+            elif status_code == "ERROR":
                 logger.error(f"Media processing error: {status}")
                 return False
-            
-            time.sleep(5)
+            # IN_PROGRESS or other — keep waiting
         else:
-            logger.error("Media processing timeout")
+            logger.error("Media processing timeout (150s)")
             return False
 
         # Step 3: Publish
