@@ -127,7 +127,7 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', '
 .divider {{ margin: 28px 90px 0; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05)); position: relative; z-index: 2; }}
 .content {{ flex: 1; padding: 44px 90px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; }}
 .emoji-icon {{ font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 4px 15px rgba(0,0,0,0.5)); }}
-.title {{ font-size: 52px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 20px; max-width: 880px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; text-shadow: 0 3px 20px rgba(0,0,0,0.8), 0 1px 5px rgba(0,0,0,0.9); }}
+.title {{ font-size: 52px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 20px; max-width: 850px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; letter-spacing: -0.02em; text-shadow: 0 3px 20px rgba(0,0,0,0.8), 0 1px 5px rgba(0,0,0,0.9); }}
 .subtitle {{ font-size: 34px; font-weight: 700; color: #fbbf24; word-wrap: break-word; overflow-wrap: break-word; max-width: 880px; text-shadow: 0 2px 15px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9); margin-bottom: 28px; }}
 .stats-row {{ display: flex; gap: 20px; margin-top: 16px; }}
 .stat-card {{ background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 20px 28px; backdrop-filter: blur(15px); }}
@@ -146,7 +146,7 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', '
 .features {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
 .feature {{ font-size: 20px; color: #6ee7b7; font-weight: 600; }}
 .feature::before {{ content: '✓ '; color: #10b981; font-weight: 800; }}
-.cta-bar {{ background: {c["cta_bg"]}; padding: 0 90px; height: 88px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
+.cta-bar {{ background: {c["cta_bg"]}; padding: 0 90px; height: 88px; height: 88px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
 .cta-text {{ font-size: 28px; font-weight: 700; color: white; }}
 .cta-url {{ font-size: 20px; color: rgba(255,255,255,0.8); font-weight: 600; }}
 </style></head><body>
