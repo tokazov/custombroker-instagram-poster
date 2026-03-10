@@ -201,7 +201,7 @@ const {{ chromium }} = require('playwright');
 (async () => {{
   const browser = await chromium.launch({{args: ['--no-sandbox']}});
   const page = await browser.newPage({{ viewport: {{ width: 1080, height: 1080 }} }});
-  await page.goto('file://{html_path}', {{waitUntil: 'networkidle'}});
+  await page.goto('file://{html_path}', {{waitUntil: 'domcontentloaded'}}); await new Promise(r => setTimeout(r, 2000));
   await page.screenshot({{ path: '{out_path}', clip: {{ x: 0, y: 0, width: 1080, height: 1080 }} }});
   await browser.close();
 }})();
@@ -212,11 +212,69 @@ const {{ chromium }} = require('playwright');
         result = subprocess.run(["node", js_path], capture_output=True, text=True, timeout=30, cwd=app_dir)
         if result.returncode != 0:
             logger.error(f"Playwright render failed: {result.stderr[:200]}")
-            return None
+            logger.info("Trying PIL fallback...")
+            return _pil_fallback(post, photo_path)
 
         logger.info(f"Image generated: {out_path}")
         return out_path
 
     except Exception as e:
         logger.error(f"Image generation failed: {e}")
+        logger.info("Trying PIL fallback...")
+        return _pil_fallback(post, photo_path)
+
+
+def _pil_fallback(post: dict, photo_path: str) -> str | None:
+    """Fallback: render post image with Pillow when Playwright fails."""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except ImportError:
+        logger.error("Pillow not installed for fallback")
+        return None
+
+    try:
+        img = Image.open(photo_path).convert("RGB")
+        img = img.resize((1080, 1080), Image.LANCZOS)
+
+        # Dark overlay
+        overlay = Image.new("RGBA", img.size, (0, 0, 0, 160))
+        img = img.convert("RGBA")
+        img = Image.alpha_composite(img, overlay)
+
+        draw = ImageDraw.Draw(img)
+
+        # Try to load a nice font, fallback to default
+        try:
+            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
+            font_body = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32)
+            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
+        except (IOError, OSError):
+            font_title = ImageFont.load_default()
+            font_body = font_title
+            font_small = font_title
+
+        emoji = post.get("emoji", "🚛")
+        title = post.get("title", post.get("title_hint", "Cargo Rapido"))
+
+        # Title
+        draw.text((60, 80), f"{emoji} {title}", fill="white", font=font_title)
+
+        # Body text (word-wrap)
+        text = post.get("text", "")[:400]
+        y = 200
+        for line in text.split("\n")[:12]:
+            draw.text((60, y), line, fill="white", font=font_body)
+            y += 42
+
+        # Footer
+        draw.text((60, 980), "CARGO RAPIDO  •  cargo.rapido", fill=(200, 200, 200), font=font_small)
+
+        out_path = photo_path.replace(".jpg", "_final.png")
+        img = img.convert("RGB")
+        img.save(out_path, "PNG", quality=95)
+        logger.info(f"PIL fallback image: {out_path}")
+        return out_path
+
+    except Exception as e:
+        logger.error(f"PIL fallback failed: {e}")
         return None
