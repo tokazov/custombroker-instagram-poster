@@ -57,76 +57,118 @@ def fetch_photo(keyword: str) -> str | None:
 
 
 def _build_html(post: dict, photo_b64: str) -> str:
-    """Build clean, minimal HTML poster with responsive text."""
+    """Build HTML template for the poster."""
+    post_type = post["type"]
     title = post.get("title", "")
     subtitle = post.get("subtitle", "")
-    emoji = post.get("emoji", "\U0001F69B")
-    post_type = post.get("type", "route")
+    emoji = post.get("emoji", "🤖")
+    
+    # Type-specific colors
+    colors = {
+        "case": {"badge_bg": "rgba(59,130,246,0.25)", "badge_color": "#93c5fd", "badge_border": "rgba(59,130,246,0.35)",
+                 "cta_bg": "linear-gradient(135deg, rgba(59,130,246,0.95), rgba(37,99,235,0.95))", "label": "📊 Кейс"},
+        "tip": {"badge_bg": "rgba(16,185,129,0.25)", "badge_color": "#6ee7b7", "badge_border": "rgba(16,185,129,0.35)",
+                "cta_bg": "linear-gradient(135deg, rgba(16,185,129,0.95), rgba(5,150,105,0.95))", "label": "💡 Совет"},
+        "offer": {"badge_bg": "rgba(239,68,68,0.25)", "badge_color": "#fca5a5", "badge_border": "rgba(239,68,68,0.35)",
+                  "cta_bg": "linear-gradient(135deg, rgba(239,68,68,0.95), rgba(220,38,38,0.95))", "label": "🔥 Оффер"},
+    }
+    c = colors.get(post_type, colors["case"])
 
-    accents = {"route": "#f59e0b", "tip": "#10b981", "case": "#3b82f6", "promo": "#ef4444"}
-    accent = accents.get(post_type, "#f59e0b")
+    # Build middle section based on type
+    middle_html = ""
+    if post_type == "case" and post.get("stats"):
+        cards = "".join(f'''
+        <div class="stat-card">
+            <div class="stat-num">{s.split(" ")[0]}</div>
+            <div class="stat-label">{" ".join(s.split(" ")[1:])}</div>
+        </div>''' for s in post["stats"][:3])
+        middle_html = f'<div class="stats-row">{cards}</div>'
+    
+    elif post_type == "tip" and post.get("points"):
+        items = "".join(f'''
+        <div class="list-item">
+            <div class="item-num">{i+1}</div>
+            <div class="item-text">{p}</div>
+        </div>''' for i, p in enumerate(post["points"][:5]))
+        middle_html = f'<div class="list">{items}</div>'
+    
+    elif post_type == "offer" and post.get("price"):
+        feats = "".join(f'<div class="feature">{f}</div>' for f in post.get("features", [])[:4])
+        middle_html = f'''
+        <div class="price-card">
+            <div class="price-row">
+                <div class="price-from">от</div>
+                <div class="price-num">{post["price"]}</div>
+                <div class="price-per">/месяц</div>
+            </div>
+            <div class="features">{feats}</div>
+        </div>'''
 
-    labels = {"route": "\u041C\u0410\u0420\u0428\u0420\u0423\u0422", "tip": "\u0421\u041E\u0412\u0415\u0422", "case": "\u041A\u0415\u0419\u0421", "promo": "\u0410\u041A\u0426\u0418\u042F"}
-    label = labels.get(post_type, "")
-
-    sub_html = ""
-    if subtitle:
-        sub_html = '<div class="accent-line"></div><div class="sub">' + subtitle + '</div>'
-
-    css = f"""* {{ margin: 0; padding: 0; box-sizing: border-box; }}
-body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif; }}
-.poster {{ width: 1080px; height: 1080px; position: relative; display: flex; flex-direction: column; }}
-.bg {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }}
-.overlay {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.92) 100%); }}
-.top {{ position: absolute; top: 0; left: 0; right: 0; z-index: 2;
-  padding: 40px 72px; display: flex; align-items: center; justify-content: space-between; }}
-.logo {{ display: flex; align-items: center; gap: 12px; }}
-.logo-mark {{ width: 40px; height: 40px; border-radius: 10px;
-  background: linear-gradient(135deg, #f59e0b, #ea580c);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 900; color: white; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }}
-.logo-name {{ font-size: 22px; font-weight: 800; color: white; text-shadow: 0 2px 12px rgba(0,0,0,0.6); }}
-.logo-name span {{ color: #fbbf24; }}
-.tag {{ padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700;
-  letter-spacing: 2px; text-transform: uppercase; background: {accent}; color: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3); }}
-.bottom {{ position: absolute; bottom: 60px; left: 72px; right: 72px; z-index: 2; }}
-.emoji {{ font-size: 52px; margin-bottom: 16px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }}
-.title {{ font-size: 52px; font-weight: 900; color: white; line-height: 1.2;
-  word-wrap: break-word; overflow-wrap: break-word; white-space: normal;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.7), 0 1px 4px rgba(0,0,0,0.9); }}
-.sub {{ font-size: 28px; font-weight: 600; color: {accent}; margin-top: 14px;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.7); word-wrap: break-word; overflow-wrap: break-word; white-space: normal; }}
-.accent-line {{ width: 60px; height: 4px; background: {accent}; border-radius: 2px; margin: 20px 0; }}
-.cta {{ position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
-  background: rgba(0,0,0,0.7); backdrop-filter: blur(12px); padding: 18px 72px;
-  display: flex; align-items: center; justify-content: space-between; border-top: 2px solid {accent}; }}
-.cta-left {{ font-size: 18px; font-weight: 700; color: white; }}
-.cta-right {{ font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.7); }}"""
-
-    html = f"""<!DOCTYPE html>
+    return f'''<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style>{css}</style></head><body>
+<style>
+* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif; }}
+.poster {{ width: 1080px; height: 1080px; position: relative; display: flex; flex-direction: column; overflow: hidden; }}
+.bg-photo {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }}
+.overlay {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.55) 100%); }}
+.top-bar {{ padding: 48px 72px 0; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
+.logo {{ display: flex; align-items: center; gap: 14px; }}
+.logo-icon {{ width: 44px; height: 44px; background: linear-gradient(135deg, #f59e0b, #ea580c); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: white;
+  box-shadow: 0 4px 15px rgba(59,130,246,0.4); }}
+.logo-text {{ font-size: 26px; font-weight: 800; color: white; text-shadow: 0 2px 15px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9); }}
+.logo-text span {{ color: #fbbf24; }}
+.badge {{ padding: 8px 18px; border-radius: 20px; font-size: 14px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; background: {c["badge_bg"]}; color: {c["badge_color"]};
+  border: 1px solid {c["badge_border"]}; backdrop-filter: blur(10px); }}
+.divider {{ margin: 28px 72px 0; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05)); position: relative; z-index: 2; }}
+.content {{ flex: 1; padding: 44px 72px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; }}
+.emoji-icon {{ font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 4px 15px rgba(0,0,0,0.5)); }}
+.title {{ font-size: 52px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 20px; max-width: 880px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; text-shadow: 0 3px 20px rgba(0,0,0,0.8), 0 1px 5px rgba(0,0,0,0.9); }}
+.subtitle {{ font-size: 34px; font-weight: 700; color: #fbbf24; word-wrap: break-word; overflow-wrap: break-word; max-width: 880px; text-shadow: 0 2px 15px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9); margin-bottom: 28px; }}
+.stats-row {{ display: flex; gap: 20px; margin-top: 16px; }}
+.stat-card {{ background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 20px 28px; backdrop-filter: blur(15px); }}
+.stat-num {{ font-size: 32px; font-weight: 900; color: #fbbf24; }}
+.stat-label {{ font-size: 16px; color: rgba(255,255,255,0.7); margin-top: 4px; }}
+.list {{ display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }}
+.list-item {{ display: flex; align-items: center; gap: 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 22px; backdrop-filter: blur(12px); }}
+.item-num {{ width: 38px; height: 38px; min-width: 38px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: white; }}
+.item-text {{ font-size: 22px; font-weight: 600; color: #f0f0f0; word-wrap: break-word; overflow-wrap: break-word; }}
+.price-card {{ background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 32px 36px; max-width: 700px; backdrop-filter: blur(15px); position: relative; overflow: hidden; margin-top: 8px; }}
+.price-card::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #ef4444, #f59e0b); }}
+.price-row {{ display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }}
+.price-from {{ font-size: 22px; color: rgba(255,255,255,0.6); font-weight: 600; }}
+.price-num {{ font-size: 64px; font-weight: 900; color: #fbbf24; }}
+.price-per {{ font-size: 22px; color: rgba(255,255,255,0.5); font-weight: 600; align-self: flex-end; padding-bottom: 12px; }}
+.features {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
+.feature {{ font-size: 20px; color: #6ee7b7; font-weight: 600; }}
+.feature::before {{ content: '✓ '; color: #10b981; font-weight: 800; }}
+.cta-bar {{ background: {c["cta_bg"]}; padding: 0 72px; height: 88px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
+.cta-text {{ font-size: 28px; font-weight: 700; color: white; }}
+.cta-url {{ font-size: 20px; color: rgba(255,255,255,0.8); font-weight: 600; }}
+</style></head><body>
 <div class="poster">
-  <img class="bg" src="data:image/jpeg;base64,{photo_b64}" />
+  <img class="bg-photo" src="data:image/jpeg;base64,{photo_b64}" />
   <div class="overlay"></div>
-  <div class="top">
-    <div class="logo"><div class="logo-mark">CR</div><div class="logo-name">Cargo <span>Rapido</span></div></div>
-    <div class="tag">{label}</div>
+  <div class="top-bar">
+    <div class="logo"><div class="logo-icon">CR</div><div class="logo-text">Cargo <span>Rapido</span></div></div>
+    <div class="badge">{c["label"]}</div>
   </div>
-  <div class="bottom">
-    <div class="emoji">{emoji}</div>
+  <div class="divider"></div>
+  <div class="content">
+    <div class="emoji-icon">{emoji}</div>
     <div class="title">{title}</div>
-    {sub_html}
+    {"<div class='subtitle'>" + subtitle + "</div>" if subtitle else ""}
+    {middle_html}
   </div>
-  <div class="cta">
-    <div class="cta-left">@cargo.rapido</div>
-    <div class="cta-right">taplink.cc/cargorapido</div>
+  <div class="cta-bar">
+    <div class="cta-text">cargo.rapido | Ссылка в шапке</div>
+    <div class="cta-url">taplink.cc/cargorapido</div>
   </div>
-</div></body></html>"""
-    return html
+</div></body></html>'''
 
 
 def generate_image(post: dict, photo_path: str) -> str | None:
