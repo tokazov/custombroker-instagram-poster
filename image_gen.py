@@ -66,11 +66,11 @@ def _build_html(post: dict, photo_b64: str) -> str:
     # Type-specific colors
     colors = {
         "case": {"badge_bg": "rgba(59,130,246,0.25)", "badge_color": "#93c5fd", "badge_border": "rgba(59,130,246,0.35)",
-                 "cta_bg": "linear-gradient(135deg, rgba(59,130,246,0.95), rgba(37,99,235,0.95))", "label": "📊 Кейс"},
+                 "cta_bg": "linear-gradient(135deg, #3b82f6, #2563eb)", "label": "📊 Кейс"},
         "tip": {"badge_bg": "rgba(16,185,129,0.25)", "badge_color": "#6ee7b7", "badge_border": "rgba(16,185,129,0.35)",
-                "cta_bg": "linear-gradient(135deg, rgba(16,185,129,0.95), rgba(5,150,105,0.95))", "label": "💡 Совет"},
+                "cta_bg": "linear-gradient(135deg, #3b82f6, #2563eb)", "label": "💡 Совет"},
         "offer": {"badge_bg": "rgba(239,68,68,0.25)", "badge_color": "#fca5a5", "badge_border": "rgba(239,68,68,0.35)",
-                  "cta_bg": "linear-gradient(135deg, rgba(239,68,68,0.95), rgba(220,38,38,0.95))", "label": "🔥 Оффер"},
+                  "cta_bg": "linear-gradient(135deg, #3b82f6, #2563eb)", "label": "🔥 Оффер"},
     }
     c = colors.get(post_type, colors["case"])
 
@@ -146,9 +146,9 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', '
 .features {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
 .feature {{ font-size: 20px; color: #6ee7b7; font-weight: 600; }}
 .feature::before {{ content: '✓ '; color: #10b981; font-weight: 800; }}
-.cta-bar {{ background: {c["cta_bg"]}; padding: 0 90px; height: 88px; height: 88px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
-.cta-text {{ font-size: 28px; font-weight: 700; color: white; }}
-.cta-url {{ font-size: 20px; color: rgba(255,255,255,0.8); font-weight: 600; }}
+.cta-bar {{ background: {c["cta_bg"]}; padding: 0 90px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
+.cta-text {{ font-size: 22px; font-weight: 700; color: white; }}
+.cta-url {{ font-size: 18px; color: rgba(255,255,255,0.8); font-weight: 600; }}
 </style></head><body>
 <div class="poster">
   <img class="bg-photo" src="data:image/jpeg;base64,{photo_b64}" />
