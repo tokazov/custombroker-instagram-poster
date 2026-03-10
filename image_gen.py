@@ -110,12 +110,12 @@ def _build_html(post: dict, photo_b64: str) -> str:
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', sans-serif; }}
+body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; }}
 .poster {{ width: 1080px; height: 1080px; position: relative; display: flex; flex-direction: column; overflow: hidden; }}
 .bg-photo {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }}
 .overlay {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.55) 100%); }}
-.top-bar {{ padding: 48px 60px 0; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
+.top-bar {{ padding: 48px 80px 0; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
 .logo {{ display: flex; align-items: center; gap: 14px; }}
 .logo-icon {{ width: 44px; height: 44px; background: linear-gradient(135deg, #f59e0b, #ea580c); border-radius: 12px;
   display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: white;
@@ -125,8 +125,8 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', s
 .badge {{ padding: 8px 18px; border-radius: 20px; font-size: 14px; font-weight: 700; letter-spacing: 1.5px;
   text-transform: uppercase; background: {c["badge_bg"]}; color: {c["badge_color"]};
   border: 1px solid {c["badge_border"]}; backdrop-filter: blur(10px); }}
-.divider {{ margin: 28px 60px 0; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05)); position: relative; z-index: 2; }}
-.content {{ flex: 1; padding: 44px 60px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; }}
+.divider {{ margin: 28px 80px 0; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05)); position: relative; z-index: 2; }}
+.content {{ flex: 1; padding: 44px 80px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; }}
 .emoji-icon {{ font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 4px 15px rgba(0,0,0,0.5)); }}
 .title {{ font-size: 52px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 20px; max-width: 900px; text-shadow: 0 3px 20px rgba(0,0,0,0.8), 0 1px 5px rgba(0,0,0,0.9); }}
 .subtitle {{ font-size: 34px; font-weight: 700; color: #fbbf24; text-shadow: 0 2px 15px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9); margin-bottom: 28px; }}
@@ -147,7 +147,7 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', s
 .features {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
 .feature {{ font-size: 20px; color: #6ee7b7; font-weight: 600; }}
 .feature::before {{ content: '✓ '; color: #10b981; font-weight: 800; }}
-.cta-bar {{ background: {c["cta_bg"]}; padding: 0 60px; height: 88px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
+.cta-bar {{ background: {c["cta_bg"]}; padding: 0 80px; height: 88px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
 .cta-text {{ font-size: 28px; font-weight: 700; color: white; }}
 .cta-url {{ font-size: 20px; color: rgba(255,255,255,0.8); font-weight: 600; }}
 </style></head><body>
@@ -253,21 +253,22 @@ def _pil_fallback(post: dict, photo_path: str) -> str | None:
             font_body = font_title
             font_small = font_title
 
-        emoji = post.get("emoji", "🚛")
         title = post.get("title", post.get("title_hint", "Cargo Rapido"))
 
-        # Title
-        draw.text((60, 80), f"{emoji} {title}", fill="white", font=font_title)
+        # Title (skip emoji — PIL can't render them)
+        draw.text((80, 80), title, fill="white", font=font_title)
 
-        # Body text (word-wrap)
+        # Body text (word-wrap, strip emoji)
+        import re as _re
         text = post.get("text", "")[:400]
+        text = _re.sub(r'[\U00010000-\U0010ffff]', '', text)  # strip emoji
         y = 200
         for line in text.split("\n")[:12]:
-            draw.text((60, y), line, fill="white", font=font_body)
+            draw.text((80, y), line, fill="white", font=font_body)
             y += 42
 
         # Footer
-        draw.text((60, 980), "CARGO RAPIDO  •  cargo.rapido", fill=(200, 200, 200), font=font_small)
+        draw.text((80, 980), "CARGO RAPIDO  •  cargo.rapido", fill=(200, 200, 200), font=font_small)
 
         out_path = photo_path.replace(".jpg", "_final.png")
         img = img.convert("RGB")
