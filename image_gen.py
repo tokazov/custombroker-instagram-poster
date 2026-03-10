@@ -128,8 +128,8 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', '
 .divider {{ margin: 28px 80px 0; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05)); position: relative; z-index: 2; }}
 .content {{ flex: 1; padding: 44px 80px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; }}
 .emoji-icon {{ font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 4px 15px rgba(0,0,0,0.5)); }}
-.title {{ font-size: 52px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 20px; max-width: 900px; text-shadow: 0 3px 20px rgba(0,0,0,0.8), 0 1px 5px rgba(0,0,0,0.9); }}
-.subtitle {{ font-size: 34px; font-weight: 700; color: #fbbf24; text-shadow: 0 2px 15px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9); margin-bottom: 28px; }}
+.title {{ font-size: 52px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 20px; max-width: 920px; word-wrap: break-word; overflow-wrap: break-word; text-shadow: 0 3px 20px rgba(0,0,0,0.8), 0 1px 5px rgba(0,0,0,0.9); }}
+.subtitle {{ font-size: 34px; font-weight: 700; color: #fbbf24; word-wrap: break-word; overflow-wrap: break-word; max-width: 920px; text-shadow: 0 2px 15px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9); margin-bottom: 28px; }}
 .stats-row {{ display: flex; gap: 20px; margin-top: 16px; }}
 .stat-card {{ background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 20px 28px; backdrop-filter: blur(15px); }}
 .stat-num {{ font-size: 32px; font-weight: 900; color: #fbbf24; }}
@@ -137,7 +137,7 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', '
 .list {{ display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }}
 .list-item {{ display: flex; align-items: center; gap: 16px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 22px; backdrop-filter: blur(12px); }}
 .item-num {{ width: 38px; height: 38px; min-width: 38px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: white; }}
-.item-text {{ font-size: 22px; font-weight: 600; color: #f0f0f0; }}
+.item-text {{ font-size: 22px; font-weight: 600; color: #f0f0f0; word-wrap: break-word; overflow-wrap: break-word; }}
 .price-card {{ background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 32px 36px; max-width: 700px; backdrop-filter: blur(15px); position: relative; overflow: hidden; margin-top: 8px; }}
 .price-card::before {{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #ef4444, #f59e0b); }}
 .price-row {{ display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }}
