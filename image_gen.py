@@ -146,9 +146,9 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', '
 .features {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
 .feature {{ font-size: 20px; color: #6ee7b7; font-weight: 600; }}
 .feature::before {{ content: '✓ '; color: #10b981; font-weight: 800; }}
-.cta-bar {{ background: {c["cta_bg"]}; padding: 0 90px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
-.cta-text {{ font-size: 22px; font-weight: 700; color: white; }}
-.cta-url {{ font-size: 18px; color: rgba(255,255,255,0.8); font-weight: 600; }}
+.cta-bar {{ background: {c["cta_bg"]}; padding: 0 90px; height: 80px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
+.cta-text {{ font-size: 26px; font-weight: 700; color: white; }}
+.cta-url {{ font-size: 22px; color: rgba(255,255,255,0.8); font-weight: 600; }}
 </style></head><body>
 <div class="poster">
   <img class="bg-photo" src="data:image/jpeg;base64,{photo_b64}" />
@@ -319,7 +319,7 @@ def _pil_fallback(post: dict, photo_path: str) -> str | None:
         # Footer bar
         draw.rectangle([(0, 1020), (1080, 1080)], fill=(0, 0, 0))
         try:
-            font_small = ImageFont.truetype(FONT_REGULAR, 20)
+            font_small = ImageFont.truetype(FONT_REGULAR, 26)
         except Exception:
             font_small = ImageFont.load_default()
         draw.text((80, 1038), "@cargo.rapido", fill="white", font=font_small)
@@ -327,10 +327,10 @@ def _pil_fallback(post: dict, photo_path: str) -> str | None:
 
         # Logo top-left
         try:
-            font_logo = ImageFont.truetype(FONT_BOLD, 22)
+            font_logo = ImageFont.truetype(FONT_BOLD, 30)
         except Exception:
             font_logo = ImageFont.load_default()
-        draw.text((80, 40), "CR  Cargo Rapido", fill="white", font=font_logo)
+        draw.text((80, 36), "CR  Cargo Rapido", fill="white", font=font_logo)
 
         out_path = photo_path.replace(".jpg", "_final.png")
         img = img.convert("RGB")
