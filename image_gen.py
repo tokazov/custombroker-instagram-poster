@@ -126,9 +126,9 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', '
   border: 1px solid {c["badge_border"]}; backdrop-filter: blur(10px); }}
 .divider {{ margin: 28px 90px 0; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05)); position: relative; z-index: 2; }}
 .content {{ flex: 1; padding: 44px 90px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; }}
-.emoji-icon {{ font-size: 72px; margin-bottom: 20px; filter: drop-shadow(0 4px 15px rgba(0,0,0,0.5)); }}
-.title {{ font-size: 62px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 20px; max-width: 850px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; letter-spacing: -0.02em; text-shadow: 0 3px 20px rgba(0,0,0,0.8), 0 1px 5px rgba(0,0,0,0.9); }}
-.subtitle {{ font-size: 40px; font-weight: 700; color: #fbbf24; word-wrap: break-word; overflow-wrap: break-word; max-width: 880px; text-shadow: 0 2px 15px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9); margin-bottom: 28px; }}
+.emoji-icon {{ font-size: 80px; margin-bottom: 20px; filter: drop-shadow(0 4px 15px rgba(0,0,0,0.5)); }}
+.title {{ font-size: 76px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 20px; max-width: 850px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; letter-spacing: -0.02em; text-shadow: 0 3px 20px rgba(0,0,0,0.8), 0 1px 5px rgba(0,0,0,0.9); }}
+.subtitle {{ font-size: 48px; font-weight: 700; color: #fbbf24; word-wrap: break-word; overflow-wrap: break-word; max-width: 880px; text-shadow: 0 2px 15px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9); margin-bottom: 28px; }}
 .stats-row {{ display: flex; gap: 20px; margin-top: 16px; }}
 .stat-card {{ background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 20px 28px; backdrop-filter: blur(15px); }}
 .stat-num {{ font-size: 32px; font-weight: 900; color: #fbbf24; }}
@@ -289,7 +289,7 @@ def _pil_fallback(post: dict, photo_path: str) -> str | None:
         subtitle = _re.sub(r'[\U00010000-\U0010ffff]', '', subtitle).strip()
 
         # Auto-fit title
-        title_font, title_lines = _fit_text(draw, title, FONT_BOLD, max_size=64, min_size=36, max_lines=3)
+        title_font, title_lines = _fit_text(draw, title, FONT_BOLD, max_size=78, min_size=40, max_lines=3)
         line_h = int(title_font.size * 1.3)
         total_title_h = len(title_lines) * line_h
 
@@ -298,7 +298,7 @@ def _pil_fallback(post: dict, photo_path: str) -> str | None:
         sub_font = None
         sub_h = 0
         if subtitle:
-            sub_font, sub_lines = _fit_text(draw, subtitle, FONT_REGULAR, max_size=38, min_size=24, max_lines=2)
+            sub_font, sub_lines = _fit_text(draw, subtitle, FONT_REGULAR, max_size=46, min_size=28, max_lines=2)
             sub_h = len(sub_lines) * int(sub_font.size * 1.3) + 30
 
         # Position from bottom (above footer)
