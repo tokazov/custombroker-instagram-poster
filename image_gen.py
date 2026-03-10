@@ -114,7 +114,7 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', '
 .bg-photo {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }}
 .overlay {{ position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.55) 100%); }}
-.top-bar {{ padding: 48px 72px 0; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
+.top-bar {{ padding: 48px 90px 0; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
 .logo {{ display: flex; align-items: center; gap: 14px; }}
 .logo-icon {{ width: 44px; height: 44px; background: linear-gradient(135deg, #f59e0b, #ea580c); border-radius: 12px;
   display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: white;
@@ -124,8 +124,8 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', '
 .badge {{ padding: 8px 18px; border-radius: 20px; font-size: 14px; font-weight: 700; letter-spacing: 1.5px;
   text-transform: uppercase; background: {c["badge_bg"]}; color: {c["badge_color"]};
   border: 1px solid {c["badge_border"]}; backdrop-filter: blur(10px); }}
-.divider {{ margin: 28px 72px 0; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05)); position: relative; z-index: 2; }}
-.content {{ flex: 1; padding: 44px 72px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; }}
+.divider {{ margin: 28px 90px 0; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05)); position: relative; z-index: 2; }}
+.content {{ flex: 1; padding: 44px 90px; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 2; }}
 .emoji-icon {{ font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 4px 15px rgba(0,0,0,0.5)); }}
 .title {{ font-size: 52px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 20px; max-width: 880px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; text-shadow: 0 3px 20px rgba(0,0,0,0.8), 0 1px 5px rgba(0,0,0,0.9); }}
 .subtitle {{ font-size: 34px; font-weight: 700; color: #fbbf24; word-wrap: break-word; overflow-wrap: break-word; max-width: 880px; text-shadow: 0 2px 15px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.9); margin-bottom: 28px; }}
@@ -146,7 +146,7 @@ body {{ width: 1080px; height: 1080px; overflow: hidden; font-family: 'Inter', '
 .features {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
 .feature {{ font-size: 20px; color: #6ee7b7; font-weight: 600; }}
 .feature::before {{ content: '✓ '; color: #10b981; font-weight: 800; }}
-.cta-bar {{ background: {c["cta_bg"]}; padding: 0 72px; height: 88px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
+.cta-bar {{ background: {c["cta_bg"]}; padding: 0 90px; height: 88px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 2; }}
 .cta-text {{ font-size: 28px; font-weight: 700; color: white; }}
 .cta-url {{ font-size: 20px; color: rgba(255,255,255,0.8); font-weight: 600; }}
 </style></head><body>
