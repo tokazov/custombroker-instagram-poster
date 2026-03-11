@@ -47,14 +47,24 @@ TOPICS = [
      "emoji": "🇩🇪", "stats": ["2 тонны", "10 дней", "Таможня под ключ"]},
     {"title_hint": "300 кг личных вещей Москва → Батуми", "niche": "road", "type": "case",
      "emoji": "📦", "stats": ["300 кг", "6 дней", "Дверь-дверь"]},
-    {"title_hint": "Коммерческая партия одежды Стамбул → Тбилиси", "niche": "delivery", "type": "case",
-     "emoji": "👗", "stats": ["500 кг", "4 дня", "Полное оформление"]},
+    {"title_hint": "Сборный груз из Казахстана в Тбилиси", "niche": "road", "type": "case",
+     "emoji": "🇰🇿", "stats": ["800 кг", "12 дней", "СНГ → Грузия"]},
 
     # ПРЕИМУЩЕСТВА
     {"title_hint": "Почему 4000+ клиентов выбирают Cargo Rapido", "niche": "happy", "type": "promo",
      "emoji": "⭐", "points": ["Работаем с 2015 года", "Доставка дверь-дверь", "Отслеживание 24/7", "Страховка каждого груза"]},
     {"title_hint": "Бесплатная консультация по доставке", "niche": "delivery", "type": "promo",
      "emoji": "📞", "subtitle": "Ответим за 5 минут", "fact": "WhatsApp / Telegram"},
+
+    # СНГ
+    {"title_hint": "Доставка из Узбекистана в Грузию", "niche": "road", "type": "route",
+     "emoji": "🇺🇿", "subtitle": "Ташкент → Тбилиси", "fact": "от 10 дней"},
+    {"title_hint": "Грузоперевозки из Беларуси в Грузию", "niche": "road", "type": "route",
+     "emoji": "🇧🇾", "subtitle": "Минск → Тбилиси", "fact": "от 7 дней"},
+    {"title_hint": "Из Грузии в любую точку мира", "niche": "delivery", "type": "route",
+     "emoji": "🌍", "subtitle": "Экспорт без границ", "fact": "200+ стран"},
+    {"title_hint": "Доставка из Армении в Грузию за 2 дня", "niche": "delivery", "type": "route",
+     "emoji": "🇦🇲", "subtitle": "Ереван → Тбилиси", "fact": "от 2 дней"},
 ]
 
 
