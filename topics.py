@@ -19,19 +19,19 @@ HISTORY_FILE = os.path.join(BASE_DIR, "post_history.json")
 MAX_HISTORY = 30
 
 PHOTO_KEYWORDS = {
-    "delivery": ["cargo delivery truck", "delivery van road", "package delivery", "freight transport"],
-    "warehouse": ["warehouse logistics", "warehouse packages", "storage facility", "cargo warehouse"],
-    "georgia": ["tbilisi city", "georgia caucasus", "batumi city", "georgia landscape"],
-    "europe": ["europe highway", "european city street", "europe truck road", "europe logistics"],
-    "russia": ["moscow city skyline", "russia highway", "cargo train russia", "russian logistics"],
-    "turkey": ["istanbul bosphorus", "turkey truck highway", "turkish logistics", "istanbul cargo"],
-    "moving": ["moving boxes", "relocation moving", "apartment moving", "furniture moving"],
-    "packages": ["cardboard boxes", "package shipping", "parcels delivery", "wrapped packages"],
-    "road": ["highway truck", "road transport", "mountain road", "cargo truck highway"],
-    "documents": ["shipping documents", "customs paperwork", "business documents", "office paperwork"],
-    "happy": ["happy customer delivery", "receiving package", "unboxing delivery", "doorstep delivery"],
-    "air": ["cargo airplane", "air freight", "airport cargo", "air logistics"],
-    "sea": ["cargo ship port", "container ship", "sea freight", "port logistics"],
+    "delivery": ["cargo truck highway", "freight truck road", "logistics truck", "semi truck highway"],
+    "warehouse": ["warehouse forklift", "logistics warehouse", "cargo warehouse interior", "shipping warehouse"],
+    "georgia": ["cargo truck mountain road", "caucasus highway truck", "freight transport mountain", "truck road mountains"],
+    "europe": ["european highway truck", "freight truck europe", "logistics europe highway", "truck autobahn"],
+    "russia": ["freight truck highway winter", "cargo truck road", "logistics truck winter road", "semi truck road"],
+    "turkey": ["truck highway bridge", "freight transport highway", "cargo truck city", "logistics highway"],
+    "moving": ["moving truck street", "cargo van moving", "freight van road", "moving truck highway"],
+    "packages": ["cardboard boxes warehouse", "shipping boxes logistics", "packages freight", "boxes cargo"],
+    "road": ["semi truck highway", "freight truck road", "cargo truck mountain", "truck road transport"],
+    "documents": ["logistics clipboard", "freight documents", "shipping invoice", "cargo documentation"],
+    "happy": ["truck driver delivery", "cargo delivery success", "freight truck success", "logistics delivery"],
+    "air": ["cargo airplane freight", "air freight plane", "airport cargo plane", "freight aircraft"],
+    "sea": ["cargo ship container", "container ship port", "freight ship ocean", "container vessel port"],
 }
 
 # ============================================================
