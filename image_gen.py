@@ -24,10 +24,19 @@ PAD = 60
 CONTENT_W = SIZE - PAD * 2
 
 # Brand colors — Cargo Rapido
-ACCENT_BLUE = (59, 130, 246)     # #3b82f6
-ACCENT_ORANGE = (249, 115, 22)   # #f97316 — cargo/logistics vibe
-ACCENT_YELLOW = (250, 204, 21)   # #facc15
-CTA_COLOR = ACCENT_BLUE
+import os as _os
+_COLOR_SCHEME = _os.getenv("COLOR_SCHEME", "blue")
+
+if _COLOR_SCHEME == "red":
+    ACCENT_BLUE = (220, 38, 38)      # red
+    ACCENT_ORANGE = (239, 68, 68)    # light red
+    ACCENT_YELLOW = (254, 202, 202)  # very light red
+    CTA_COLOR = (185, 28, 28)        # dark red
+else:
+    ACCENT_BLUE = (59, 130, 246)     # #3b82f6
+    ACCENT_ORANGE = (249, 115, 22)   # #f97316 — cargo/logistics vibe
+    ACCENT_YELLOW = (250, 204, 21)   # #facc15
+    CTA_COLOR = ACCENT_BLUE
 
 
 def fetch_photo(keyword: str) -> str | None:
