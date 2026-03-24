@@ -1,11 +1,14 @@
 """Cargo Rapido Instagram Poster — auto-generates and posts to @cargo.rapido.
 
-Cron: runs once daily (07:00 UTC = 11:00 Tbilisi).
+Cron: runs twice daily:
+  - 04:00 UTC (08:00 Tbilisi) — RED variant
+  - 07:00 UTC (11:00 Tbilisi) — BLUE variant (default)
 """
 
 import os
 import sys
 import logging
+from datetime import datetime, timezone
 
 logging.basicConfig(
     level=logging.INFO,
@@ -15,7 +18,19 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    logger.info("🚛 Cargo Rapido Instagram Poster starting...")
+    # Auto-detect color scheme based on UTC hour
+    utc_hour = datetime.now(timezone.utc).hour
+    color_scheme = os.getenv("COLOR_SCHEME", "")
+    
+    if not color_scheme:
+        # 04:00-05:00 UTC = red, everything else = blue
+        if utc_hour == 4:
+            color_scheme = "red"
+        else:
+            color_scheme = "blue"
+    
+    os.environ["COLOR_SCHEME"] = color_scheme
+    logger.info(f"🚛 Cargo Rapido Instagram Poster starting... COLOR={color_scheme} UTC_HOUR={utc_hour}")
 
     from topics import get_random_topic, get_photo_keyword
     from generator import generate_post
@@ -49,7 +64,7 @@ def main():
     # 5. Post to Instagram
     success = upload_and_post(image_path, post["text"])
     if success:
-        logger.info("✅ Posted to Instagram!")
+        logger.info(f"✅ Posted to Instagram! ({color_scheme} variant)")
     else:
         logger.error("❌ Failed to post")
         sys.exit(1)
