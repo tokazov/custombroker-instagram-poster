@@ -3,11 +3,27 @@
 import os
 import json
 import re
+import time
 import logging
 from anthropic import Anthropic
 
 logger = logging.getLogger(__name__)
 
+
+
+def _call_claude_with_retry(client, **kwargs):
+    """Call Claude with retry on overload."""
+    for attempt in range(5):
+        try:
+            return client.messages.create(**kwargs)
+        except Exception as e:
+            if "529" in str(e) or "overloaded" in str(e).lower() or "529" in str(type(e).__name__):
+                wait = 30 * (attempt + 1)
+                print(f"[retry] Anthropic overloaded, waiting {wait}s (attempt {attempt+1}/5)...")
+                time.sleep(wait)
+            else:
+                raise
+    raise Exception("Anthropic API overloaded after 5 retries")
 
 def generate_post(topic: dict) -> dict:
     """Generate post text + image params."""
@@ -96,7 +112,7 @@ def generate_post(topic: dict) -> dict:
         base_url="https://api.anthropic.com",
     )
 
-    response = client.messages.create(
+    response = _call_claude_with_retry(client,
         model="claude-sonnet-4-20250514",
         max_tokens=1200,
         messages=[{"role": "user", "content": prompt}],
