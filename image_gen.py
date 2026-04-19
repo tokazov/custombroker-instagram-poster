@@ -17,7 +17,7 @@ FONT_EXTRABOLD = os.path.join(BASE_DIR, "fonts", "Montserrat-ExtraBold.ttf")
 if not os.path.exists(FONT_EXTRABOLD):
     FONT_EXTRABOLD = FONT_BOLD
 
-UNSPLASH_KEY = os.getenv("UNSPLASH_ACCESS_KEY", "")
+PEXELS_KEY = os.getenv("PEXELS_API_KEY", "Jd4ELtMXmSoJq0uPtyW8Z53DPgYOyKp3deucoDVyqt533ne9FfVAz7mx")
 
 SIZE = 1080
 PAD = 60
@@ -40,26 +40,28 @@ else:
 
 
 def fetch_photo(keyword: str) -> str | None:
-    """Fetch a random photo from Unsplash."""
-    if not UNSPLASH_KEY:
-        logger.error("UNSPLASH_ACCESS_KEY not set")
-        return None
+    """Fetch a photo from Pexels."""
     try:
         r = httpx.get(
-            "https://api.unsplash.com/photos/random",
-            params={"query": keyword, "w": 1080},
-            headers={"Authorization": f"Client-ID {UNSPLASH_KEY}"},
+            "https://api.pexels.com/v1/search",
+            params={"query": keyword, "per_page": 10, "orientation": "square"},
+            headers={"Authorization": PEXELS_KEY},
             timeout=15,
         )
         r.raise_for_status()
-        url = r.json()["urls"]["regular"]
-        img_r = httpx.get(url, timeout=15)
+        photos = r.json().get("photos", [])
+        if not photos:
+            return None
+        import random
+        photo = random.choice(photos[:5])
+        url = photo["src"]["large"]
+        img_r = httpx.get(url, timeout=20)
         path = tempfile.mktemp(suffix=".jpg")
         with open(path, "wb") as f:
             f.write(img_r.content)
         return path
     except Exception as e:
-        logger.error(f"Unsplash error: {e}")
+        logger.error(f"Pexels error: {e}")
         return None
 
 
