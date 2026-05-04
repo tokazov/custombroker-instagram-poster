@@ -119,25 +119,39 @@ def _upload_image(image_path: str) -> str | None:
     # Fallback: upload to GitHub repo as temp file
     github_token = os.getenv("GITHUB_TOKEN", "")
     if github_token:
-        import hashlib
+        import base64 as b64mod
+        import datetime
+
         with open(image_path, "rb") as f:
             content = f.read()
-            b64 = base64.b64encode(content).decode()
-            fname = f"temp_{hashlib.md5(content).hexdigest()[:8]}.png"
-        
-        r = httpx.put(
-            f"https://api.github.com/repos/tokazov/cargo-instagram-poster/contents/uploads/{fname}",
-            headers={"Authorization": f"token {github_token}"},
-            json={
-                "message": f"Upload {fname}",
-                "content": b64,
-            },
-            timeout=30,
-        )
+        b64 = b64mod.b64encode(content).decode()
+
+        # Уникальное имя: timestamp + первые 6 байт контента
+        ts = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        import hashlib
+        short = hashlib.md5(content).hexdigest()[:6]
+        fname = f"temp_{ts}_{short}.png"
+        api_url = f"https://api.github.com/repos/tokazov/cargo-instagram-poster/contents/uploads/{fname}"
+        headers = {"Authorization": f"token {github_token}"}
+
+        # Проверяем не существует ли файл (на случай коллизии)
+        sha = None
+        check = httpx.get(api_url, headers=headers, timeout=10)
+        if check.status_code == 200:
+            sha = check.json().get("sha")
+
+        payload = {"message": f"Upload {fname}", "content": b64}
+        if sha:
+            payload["sha"] = sha  # требуется для update
+
+        r = httpx.put(api_url, headers=headers, json=payload, timeout=30)
         if r.status_code in (200, 201):
-            url = r.json()["content"]["download_url"]
-            logger.info(f"Image uploaded to GitHub: {url}")
-            return url
+            # raw.githubusercontent.com даёт прямой URL без auth
+            raw_url = f"https://raw.githubusercontent.com/tokazov/cargo-instagram-poster/master/uploads/{fname}"
+            logger.info(f"Image uploaded to GitHub: {raw_url}")
+            return raw_url
+        else:
+            logger.error(f"GitHub upload failed: {r.status_code} {r.text[:200]}")
     
     logger.error("No image upload method available")
     return None
