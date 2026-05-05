@@ -12,23 +12,20 @@ IG_ACCOUNT_ID = os.getenv("IG_ACCOUNT_ID", "")
 
 
 def upload_and_post(image_path: str, caption: str) -> bool:
-    """Upload image to public URL, then post to Instagram.
-    
-    Instagram API requires a public URL for the image.
-    We upload to imgbb (free) then use that URL.
-    """
+    """Upload image to public URL, then post to Instagram."""
     if not PAGE_TOKEN or not IG_ACCOUNT_ID:
         logger.error("FB_PAGE_TOKEN or IG_ACCOUNT_ID not set")
         return False
 
-    # Upload image to get a public URL (use imgbb free API or GitHub)
     image_url = _upload_image(image_path)
     if not image_url:
         logger.error("Failed to upload image to public URL")
         return False
 
+    logger.info(f"Image URL: {image_url}")
+
     client = httpx.Client(timeout=60)
-    
+
     try:
         # Step 1: Create media container
         r = client.post(
@@ -41,16 +38,16 @@ def upload_and_post(image_path: str, caption: str) -> bool:
         )
         result = r.json()
         container_id = result.get("id")
-        
+
         if not container_id:
             logger.error(f"Container creation failed: {result}")
             return False
 
         logger.info(f"Container created: {container_id}")
 
-        # Step 2: Wait for media to be ready (Instagram needs time to process)
-        for attempt in range(30):  # max 150 seconds
-            time.sleep(5)  # Always wait before checking
+        # Step 2: Wait for media to be ready
+        for attempt in range(30):
+            time.sleep(5)
             r = client.get(
                 f"https://graph.facebook.com/v21.0/{container_id}",
                 params={
@@ -61,13 +58,12 @@ def upload_and_post(image_path: str, caption: str) -> bool:
             status = r.json()
             status_code = status.get("status_code", "UNKNOWN")
             logger.info(f"Media status (attempt {attempt+1}): {status_code}")
-            
+
             if status_code == "FINISHED":
                 break
             elif status_code == "ERROR":
                 logger.error(f"Media processing error: {status}")
                 return False
-            # IN_PROGRESS or other — keep waiting
         else:
             logger.error("Media processing timeout (150s)")
             return False
@@ -81,7 +77,7 @@ def upload_and_post(image_path: str, caption: str) -> bool:
             },
         )
         pub_result = r.json()
-        
+
         if "id" in pub_result:
             logger.info(f"✅ Published to Instagram! Post ID: {pub_result['id']}")
             return True
@@ -95,63 +91,67 @@ def upload_and_post(image_path: str, caption: str) -> bool:
 
 
 def _upload_image(image_path: str) -> str | None:
-    """Upload image to imgbb and return public URL."""
+    """Upload image and return public URL.
+    Priority: imgbb (if key set) → catbox.moe (free, no key) → GitHub raw (fallback)
+    """
     import base64
-    
+
+    # 1. imgbb (if key configured)
     imgbb_key = os.getenv("IMGBB_API_KEY", "")
-    
     if imgbb_key:
-        # Use imgbb
         with open(image_path, "rb") as f:
             b64 = base64.b64encode(f.read()).decode()
-        
+        try:
+            r = httpx.post(
+                "https://api.imgbb.com/1/upload",
+                data={"key": imgbb_key, "image": b64},
+                timeout=30,
+            )
+            result = r.json()
+            if result.get("success"):
+                url = result["data"]["url"]
+                logger.info(f"Image uploaded to imgbb: {url}")
+                return url
+        except Exception as e:
+            logger.warning(f"imgbb failed: {e}")
+
+    # 2. catbox.moe — free, no key needed, widely accepted by Instagram
+    try:
+        with open(image_path, "rb") as f:
+            r = httpx.post(
+                "https://catbox.moe/user/api.php",
+                data={"reqtype": "fileupload"},
+                files={"fileToUpload": ("image.jpg", f, "image/jpeg")},
+                timeout=30,
+            )
+        if r.status_code == 200 and r.text.startswith("https://"):
+            url = r.text.strip()
+            logger.info(f"Image uploaded to catbox.moe: {url}")
+            return url
+        else:
+            logger.warning(f"catbox.moe failed: {r.status_code} {r.text[:100]}")
+    except Exception as e:
+        logger.warning(f"catbox.moe failed: {e}")
+
+    # 3. Imgur anonymous upload (fallback)
+    try:
+        with open(image_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
         r = httpx.post(
-            "https://api.imgbb.com/1/upload",
-            data={"key": imgbb_key, "image": b64},
+            "https://api.imgur.com/3/image",
+            headers={"Authorization": "Client-ID 546c25a59c58ad7"},
+            data={"image": b64, "type": "base64"},
             timeout=30,
         )
         result = r.json()
-        if result.get("success"):
-            url = result["data"]["url"]
-            logger.info(f"Image uploaded to imgbb: {url}")
+        if result.get("success") and result.get("data", {}).get("link"):
+            url = result["data"]["link"]
+            logger.info(f"Image uploaded to Imgur: {url}")
             return url
-    
-    # Fallback: upload to GitHub repo as temp file
-    github_token = os.getenv("GITHUB_TOKEN", "")
-    if github_token:
-        import base64 as b64mod
-        import datetime
-
-        with open(image_path, "rb") as f:
-            content = f.read()
-        b64 = b64mod.b64encode(content).decode()
-
-        # Уникальное имя: timestamp + первые 6 байт контента
-        ts = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-        import hashlib
-        short = hashlib.md5(content).hexdigest()[:6]
-        fname = f"temp_{ts}_{short}.png"
-        api_url = f"https://api.github.com/repos/tokazov/cargo-instagram-poster/contents/uploads/{fname}"
-        headers = {"Authorization": f"token {github_token}"}
-
-        # Проверяем не существует ли файл (на случай коллизии)
-        sha = None
-        check = httpx.get(api_url, headers=headers, timeout=10)
-        if check.status_code == 200:
-            sha = check.json().get("sha")
-
-        payload = {"message": f"Upload {fname}", "content": b64}
-        if sha:
-            payload["sha"] = sha  # требуется для update
-
-        r = httpx.put(api_url, headers=headers, json=payload, timeout=30)
-        if r.status_code in (200, 201):
-            # raw.githubusercontent.com даёт прямой URL без auth
-            raw_url = f"https://raw.githubusercontent.com/tokazov/cargo-instagram-poster/master/uploads/{fname}"
-            logger.info(f"Image uploaded to GitHub: {raw_url}")
-            return raw_url
         else:
-            logger.error(f"GitHub upload failed: {r.status_code} {r.text[:200]}")
-    
-    logger.error("No image upload method available")
+            logger.warning(f"Imgur failed: {result}")
+    except Exception as e:
+        logger.warning(f"Imgur failed: {e}")
+
+    logger.error("All image upload methods failed")
     return None
