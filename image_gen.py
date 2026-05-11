@@ -40,20 +40,30 @@ else:
 
 
 def fetch_photo(keyword: str) -> str | None:
-    """Fetch a photo from Pexels."""
+    """Fetch a photo from Pexels with random page to avoid repetition."""
     try:
+        import random
+        page = random.randint(1, 5)  # случайная страница для разнообразия
         r = httpx.get(
             "https://api.pexels.com/v1/search",
-            params={"query": keyword, "per_page": 10, "orientation": "square"},
+            params={"query": keyword, "per_page": 15, "page": page, "orientation": "square"},
             headers={"Authorization": PEXELS_KEY},
             timeout=15,
         )
         r.raise_for_status()
         photos = r.json().get("photos", [])
         if not photos:
+            # fallback to page 1
+            r2 = httpx.get(
+                "https://api.pexels.com/v1/search",
+                params={"query": keyword, "per_page": 15, "page": 1, "orientation": "square"},
+                headers={"Authorization": PEXELS_KEY},
+                timeout=15,
+            )
+            photos = r2.json().get("photos", [])
+        if not photos:
             return None
-        import random
-        photo = random.choice(photos[:5])
+        photo = random.choice(photos)
         url = photo["src"]["large"]
         img_r = httpx.get(url, timeout=20)
         path = tempfile.mktemp(suffix=".jpg")
