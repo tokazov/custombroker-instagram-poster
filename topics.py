@@ -19,19 +19,84 @@ HISTORY_FILE = os.path.join(BASE_DIR, "post_history.json")
 MAX_HISTORY = 30
 
 PHOTO_KEYWORDS = {
-    "delivery": ["cargo truck highway", "freight truck road", "logistics truck", "semi truck highway"],
-    "warehouse": ["warehouse forklift", "logistics warehouse", "cargo warehouse interior", "shipping warehouse"],
-    "georgia": ["cargo truck mountain road", "caucasus highway truck", "freight transport mountain", "truck road mountains"],
-    "europe": ["european highway truck", "freight truck europe", "logistics europe highway", "truck autobahn"],
-    "russia": ["freight truck highway winter", "cargo truck road", "logistics truck winter road", "semi truck road"],
-    "turkey": ["truck highway bridge", "freight transport highway", "cargo truck city", "logistics highway"],
-    "moving": ["moving truck street", "cargo van moving", "freight van road", "moving truck highway"],
-    "packages": ["cardboard boxes warehouse", "shipping boxes logistics", "packages freight", "boxes cargo"],
-    "road": ["semi truck highway", "freight truck road", "cargo truck mountain", "truck road transport"],
-    "documents": ["logistics clipboard", "freight documents", "shipping invoice", "cargo documentation"],
-    "happy": ["truck driver delivery", "cargo delivery success", "freight truck success", "logistics delivery"],
-    "air": ["cargo airplane freight", "air freight plane", "airport cargo plane", "freight aircraft"],
-    "sea": ["cargo ship container", "container ship port", "freight ship ocean", "container vessel port"],
+    "delivery": [
+        "cargo truck highway", "freight truck road", "logistics truck sunset",
+        "semi truck highway", "delivery van city", "truck driver road",
+        "cargo transport night", "freight highway landscape", "logistics sunset road",
+        "truck mountain pass", "cargo truck bridge", "delivery truck city street",
+    ],
+    "warehouse": [
+        "warehouse forklift", "logistics warehouse", "cargo warehouse interior",
+        "shipping warehouse", "warehouse workers", "pallet warehouse storage",
+        "logistics center aerial", "distribution center", "cargo sorting facility",
+        "warehouse shelves", "freight loading dock", "logistics operations",
+    ],
+    "georgia": [
+        "cargo truck mountain road", "caucasus highway truck", "freight transport mountain",
+        "truck road mountains", "georgia mountains road", "mountain highway truck",
+        "alpine road freight", "scenic mountain highway", "truck winding mountain road",
+        "caucasus landscape road", "mountain pass cargo", "high altitude highway",
+    ],
+    "europe": [
+        "european highway truck", "freight truck europe", "logistics europe highway",
+        "truck autobahn", "european city logistics", "freight transport bridge",
+        "european port cargo", "logistics hub europe", "truck scenic europe",
+        "alpine highway truck", "european freight", "truck european countryside",
+    ],
+    "russia": [
+        "freight truck highway winter", "cargo truck road", "logistics truck winter road",
+        "semi truck road", "truck snowy highway", "freight winter landscape",
+        "cargo truck forest road", "logistics truck sunrise", "truck birch forest road",
+        "freight transport plains", "cargo highway russia", "truck long road",
+    ],
+    "turkey": [
+        "truck highway bridge", "freight transport highway", "cargo truck city",
+        "logistics highway", "istanbul bridge truck", "bosphorus cargo ship",
+        "truck turkey road", "freight mediterranean", "cargo transport port",
+        "logistics modern city", "truck highway evening", "freight urban",
+    ],
+    "moving": [
+        "moving truck street", "cargo van moving", "freight van road",
+        "moving truck highway", "family moving boxes", "relocation boxes",
+        "moving home boxes", "people moving truck", "relocation van city",
+        "moving furniture truck", "new home boxes", "relocation service",
+    ],
+    "packages": [
+        "cardboard boxes warehouse", "shipping boxes logistics", "packages freight",
+        "boxes cargo", "parcel delivery boxes", "shipping packages",
+        "courier boxes", "cargo packages sorted", "parcels warehouse",
+        "boxes stacked warehouse", "shipping labels boxes", "freight packages",
+    ],
+    "road": [
+        "semi truck highway", "freight truck road", "cargo truck mountain",
+        "truck road transport", "highway sunset truck", "long road truck",
+        "truck empty highway", "cargo road journey", "freight transport road",
+        "truck aerial highway", "road logistics", "cargo highway aerial",
+    ],
+    "documents": [
+        "logistics clipboard", "freight documents", "shipping invoice",
+        "cargo documentation", "customs documents", "logistics paperwork",
+        "shipping label close", "freight invoice", "cargo certificate",
+        "business logistics documents", "supply chain documents", "shipping contract",
+    ],
+    "happy": [
+        "truck driver delivery", "cargo delivery success", "freight truck success",
+        "logistics delivery", "happy delivery driver", "successful shipment",
+        "delivery handshake", "logistics team", "freight success business",
+        "delivery smile customer", "cargo arrival", "successful logistics",
+    ],
+    "air": [
+        "cargo airplane freight", "air freight plane", "airport cargo plane",
+        "freight aircraft", "air cargo loading", "airport logistics",
+        "cargo plane sunrise", "air freight terminal", "airplane cargo hold",
+        "air transport logistics", "freight aviation", "cargo airport aerial",
+    ],
+    "sea": [
+        "cargo ship container", "container ship port", "freight ship ocean",
+        "container vessel port", "container terminal aerial", "port logistics",
+        "cargo ship sunset", "container ship loading", "freight port operations",
+        "sea freight terminal", "cargo vessel ocean", "port container crane",
+    ],
 }
 
 # ============================================================
