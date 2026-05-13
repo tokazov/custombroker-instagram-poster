@@ -39,10 +39,30 @@ else:
     CTA_COLOR = ACCENT_BLUE
 
 
+# Слова которые НЕ должны встречаться в alt/описании фото
+_PHOTO_EXCLUDE_WORDS = {
+    "helicopter", "helicopters", "tractor", "tractors", "farm", "farming",
+    "agriculture", "agricultural", "military", "army", "war", "combat",
+    "harvest", "field crops", "airplane passenger", "jet passenger",
+}
+
 def fetch_photo(keyword: str) -> str | None:
     """Fetch a photo from Pexels with random page to avoid repetition."""
     try:
         import random
+
+        def _filter_photos(photos: list) -> list:
+            """Убираем фото с нерелевантным контентом (вертолёты, трактора и т.п.)"""
+            result = []
+            for p in photos:
+                alt = (p.get("alt") or "").lower()
+                photographer = (p.get("photographer") or "").lower()
+                combined = alt + " " + photographer
+                if any(w in combined for w in _PHOTO_EXCLUDE_WORDS):
+                    continue
+                result.append(p)
+            return result or photos  # fallback: если всё отфильтровалось — берём оригинал
+
         page = random.randint(1, 5)  # случайная страница для разнообразия
         r = httpx.get(
             "https://api.pexels.com/v1/search",
@@ -51,7 +71,7 @@ def fetch_photo(keyword: str) -> str | None:
             timeout=15,
         )
         r.raise_for_status()
-        photos = r.json().get("photos", [])
+        photos = _filter_photos(r.json().get("photos", []))
         if not photos:
             # fallback to page 1
             r2 = httpx.get(
@@ -60,7 +80,7 @@ def fetch_photo(keyword: str) -> str | None:
                 headers={"Authorization": PEXELS_KEY},
                 timeout=15,
             )
-            photos = r2.json().get("photos", [])
+            photos = _filter_photos(r2.json().get("photos", []))
         if not photos:
             return None
         photo = random.choice(photos)

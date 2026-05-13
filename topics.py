@@ -86,10 +86,12 @@ PHOTO_KEYWORDS = {
         "delivery smile customer", "cargo arrival", "successful logistics",
     ],
     "air": [
-        "cargo airplane freight", "air freight plane", "airport cargo plane",
-        "freight aircraft", "air cargo loading", "airport logistics",
-        "cargo plane sunrise", "air freight terminal", "airplane cargo hold",
-        "air transport logistics", "freight aviation", "cargo airport aerial",
+        "cargo truck highway international", "freight truck border crossing",
+        "logistics truck international route", "semi truck highway sunset",
+        "cargo truck long distance", "freight transport international",
+        "truck highway europe", "cargo transport modern truck",
+        "logistics international highway", "freight truck road journey",
+        "modern semi truck road", "cargo delivery truck highway",
     ],
     "sea": [
         "cargo ship container", "container ship port", "freight ship ocean",
@@ -196,7 +198,7 @@ OTHER_TOPICS = [
     # Дальние
     {"id": "cn-ge", "title_hint": "Доставка из Китая в Грузию", "niche": "sea", "type": "route",
      "emoji": "🇨🇳➡️🇬🇪", "subtitle": "Авиа и морем", "fact": "от 15 дней"},
-    {"id": "us-ge", "title_hint": "Доставка из США в Грузию", "niche": "air", "type": "route",
+    {"id": "us-ge", "title_hint": "Доставка из США в Грузию", "niche": "sea", "type": "route",
      "emoji": "🇺🇸➡️🇬🇪", "subtitle": "Авиадоставка", "fact": "от 10 дней"},
     {"id": "ge-world", "title_hint": "Из Грузии в любую точку мира", "niche": "delivery", "type": "route",
      "emoji": "🌍", "subtitle": "Экспорт без границ", "fact": "200+ стран"},
