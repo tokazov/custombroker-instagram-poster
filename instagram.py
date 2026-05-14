@@ -133,25 +133,25 @@ def _upload_image(image_path: str) -> str | None:
     except Exception as e:
         logger.warning(f"catbox.moe failed: {e}")
 
-    # 3. Imgur anonymous upload (fallback)
+    # 3. freeimage.host — free, accepted by Instagram (Imgur removed — blocked by IG)
+    FREEIMAGE_KEY = "6d207e02198a847aa98d0a2a901485a5"
     try:
         with open(image_path, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode()
-        r = httpx.post(
-            "https://api.imgur.com/3/image",
-            headers={"Authorization": "Client-ID 546c25a59c58ad7"},
-            data={"image": b64, "type": "base64"},
-            timeout=30,
-        )
+            r = httpx.post(
+                "https://freeimage.host/api/1/upload",
+                data={"action": "upload", "key": FREEIMAGE_KEY},
+                files={"source": ("image.jpg", f, "image/jpeg")},
+                timeout=30,
+            )
         result = r.json()
-        if result.get("success") and result.get("data", {}).get("link"):
-            url = result["data"]["link"]
-            logger.info(f"Image uploaded to Imgur: {url}")
+        if result.get("status_code") == 200:
+            url = result["image"]["url"]
+            logger.info(f"Image uploaded to freeimage.host: {url}")
             return url
         else:
-            logger.warning(f"Imgur failed: {result}")
+            logger.warning(f"freeimage.host failed: {result}")
     except Exception as e:
-        logger.warning(f"Imgur failed: {e}")
+        logger.warning(f"freeimage.host failed: {e}")
 
     logger.error("All image upload methods failed")
     return None
