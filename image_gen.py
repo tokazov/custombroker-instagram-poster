@@ -2,10 +2,12 @@
 
 import os
 import re
+import json
 import textwrap
 import httpx
 import logging
 import tempfile
+from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 
 logger = logging.getLogger(__name__)
@@ -22,6 +24,10 @@ PEXELS_KEY = os.getenv("PEXELS_API_KEY", "Jd4ELtMXmSoJq0uPtyW8Z53DPgYOyKp3deucoD
 SIZE = 1080
 PAD = 60
 CONTENT_W = SIZE - PAD * 2
+
+# История использованных фото (хранится в файле)
+PHOTO_HISTORY_FILE = os.path.join(BASE_DIR, "photo_history.json")
+MAX_PHOTO_HISTORY = 200  # Храним последние 200 photo ID
 
 # Brand colors — Cargo Rapido
 import os as _os
@@ -46,49 +52,116 @@ _PHOTO_EXCLUDE_WORDS = {
     "harvest", "field crops", "airplane passenger", "jet passenger",
 }
 
+
+def _load_photo_history() -> set:
+    """Загружаем историю использованных photo ID."""
+    try:
+        with open(PHOTO_HISTORY_FILE, "r") as f:
+            data = json.load(f)
+            return set(data.get("used_ids", []))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return set()
+
+
+def _save_photo_history(used_ids: set):
+    """Сохраняем историю. Обрезаем до MAX_PHOTO_HISTORY."""
+    ids_list = list(used_ids)[-MAX_PHOTO_HISTORY:]
+    try:
+        with open(PHOTO_HISTORY_FILE, "w") as f:
+            json.dump({
+                "used_ids": ids_list,
+                "count": len(ids_list),
+                "updated": datetime.utcnow().isoformat()
+            }, f, indent=2)
+    except Exception as e:
+        logger.warning(f"Could not save photo history: {e}")
+
+
 def fetch_photo(keyword: str) -> str | None:
-    """Fetch a photo from Pexels with random page to avoid repetition."""
+    """Fetch a unique photo from Pexels. Tracks used photo IDs to avoid repeats."""
     try:
         import random
 
-        def _filter_photos(photos: list) -> list:
-            """Убираем фото с нерелевантным контентом (вертолёты, трактора и т.п.)"""
+        used_ids = _load_photo_history()
+        logger.info(f"📸 Photo history: {len(used_ids)} used IDs")
+
+        def _filter_photos(photos: list, exclude_ids: set) -> list:
+            """Убираем уже использованные фото и нерелевантный контент."""
             result = []
             for p in photos:
+                # Пропускаем уже использованные
+                if str(p["id"]) in exclude_ids:
+                    continue
                 alt = (p.get("alt") or "").lower()
                 photographer = (p.get("photographer") or "").lower()
                 combined = alt + " " + photographer
                 if any(w in combined for w in _PHOTO_EXCLUDE_WORDS):
                     continue
                 result.append(p)
-            return result or photos  # fallback: если всё отфильтровалось — берём оригинал
+            return result
 
-        page = random.randint(1, 5)  # случайная страница для разнообразия
-        r = httpx.get(
-            "https://api.pexels.com/v1/search",
-            params={"query": keyword, "per_page": 15, "page": page, "orientation": "square"},
-            headers={"Authorization": PEXELS_KEY},
-            timeout=15,
-        )
-        r.raise_for_status()
-        photos = _filter_photos(r.json().get("photos", []))
-        if not photos:
-            # fallback to page 1
-            r2 = httpx.get(
+        # Пробуем несколько страниц чтобы найти новое фото
+        all_candidates = []
+        pages_tried = set()
+        attempts = 0
+        max_attempts = 8
+
+        while attempts < max_attempts:
+            page = random.randint(1, 10)
+            if page in pages_tried:
+                page = (page % 10) + 1
+            pages_tried.add(page)
+            attempts += 1
+
+            r = httpx.get(
                 "https://api.pexels.com/v1/search",
-                params={"query": keyword, "per_page": 15, "page": 1, "orientation": "square"},
+                params={"query": keyword, "per_page": 15, "page": page, "orientation": "square"},
                 headers={"Authorization": PEXELS_KEY},
                 timeout=15,
             )
-            photos = _filter_photos(r2.json().get("photos", []))
-        if not photos:
+            r.raise_for_status()
+            photos = _filter_photos(r.json().get("photos", []), used_ids)
+            all_candidates.extend(photos)
+
+            if len(all_candidates) >= 3:
+                break  # Нашли достаточно — берём
+
+        # Если ничего нового не нашли — сбрасываем историю для этого keyword
+        if not all_candidates:
+            logger.warning(f"⚠️ All photos used for '{keyword}', trying without history filter")
+            r = httpx.get(
+                "https://api.pexels.com/v1/search",
+                params={"query": keyword, "per_page": 15, "page": random.randint(1, 5), "orientation": "square"},
+                headers={"Authorization": PEXELS_KEY},
+                timeout=15,
+            )
+            r.raise_for_status()
+            raw_photos = r.json().get("photos", [])
+            # Хотя бы фильтруем неподходящий контент
+            all_candidates = [p for p in raw_photos if not any(
+                w in (p.get("alt") or "").lower() for w in _PHOTO_EXCLUDE_WORDS
+            )]
+            if not all_candidates:
+                all_candidates = raw_photos
+
+        if not all_candidates:
             return None
-        photo = random.choice(photos)
+
+        photo = random.choice(all_candidates)
+        photo_id = str(photo["id"])
+
+        # Скачиваем фото
         url = photo["src"]["large"]
         img_r = httpx.get(url, timeout=20)
         path = tempfile.mktemp(suffix=".jpg")
         with open(path, "wb") as f:
             f.write(img_r.content)
+
+        # Сохраняем ID в историю
+        used_ids.add(photo_id)
+        _save_photo_history(used_ids)
+        logger.info(f"✅ Photo selected: ID={photo_id}, photographer={photo.get('photographer','?')}")
+
         return path
     except Exception as e:
         logger.error(f"Pexels error: {e}")
