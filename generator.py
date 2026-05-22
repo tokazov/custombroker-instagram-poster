@@ -12,18 +12,26 @@ logger = logging.getLogger(__name__)
 
 
 def _call_claude_with_retry(client, **kwargs):
-    """Call Claude with retry on overload."""
+    """Call Claude with retry on overload or server errors (500, 529)."""
     for attempt in range(5):
         try:
             return client.messages.create(**kwargs)
         except Exception as e:
-            if "529" in str(e) or "overloaded" in str(e).lower() or "529" in str(type(e).__name__):
+            err_str = str(e).lower()
+            is_retryable = (
+                "529" in str(e) or
+                "overloaded" in err_str or
+                "500" in str(e) or
+                "internal server error" in err_str or
+                "529" in str(type(e).__name__)
+            )
+            if is_retryable and attempt < 4:
                 wait = 30 * (attempt + 1)
-                print(f"[retry] Anthropic overloaded, waiting {wait}s (attempt {attempt+1}/5)...")
+                print(f"[retry] Anthropic error (attempt {attempt+1}/5), waiting {wait}s... {e}")
                 time.sleep(wait)
             else:
                 raise
-    raise Exception("Anthropic API overloaded after 5 retries")
+    raise Exception("Anthropic API failed after 5 retries")
 
 def generate_post(topic: dict) -> dict:
     """Generate post text + image params."""
@@ -148,3 +156,4 @@ def generate_post(topic: dict) -> dict:
         "stats": topic.get("stats"),
         "points": topic.get("points"),
     }
+
