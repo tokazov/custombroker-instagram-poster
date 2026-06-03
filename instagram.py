@@ -2,6 +2,8 @@
 
 import os
 import time
+import uuid
+import base64
 import logging
 import httpx
 
@@ -9,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 PAGE_TOKEN = os.getenv("FB_PAGE_TOKEN", "")
 IG_ACCOUNT_ID = os.getenv("IG_ACCOUNT_ID", "")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
+GITHUB_REPO = "tokazov/cargo-instagram-poster"
 
 
 def upload_and_post(image_path: str, caption: str) -> bool:
@@ -92,11 +96,39 @@ def upload_and_post(image_path: str, caption: str) -> bool:
 
 def _upload_image(image_path: str) -> str | None:
     """Upload image and return public URL.
-    Priority: imgbb (if key set) → catbox.moe (free, no key) → GitHub raw (fallback)
+    Priority: GitHub raw (reliable, token in env) → imgbb (if key set) → imgur (public)
+    catbox.moe and freeimage.host removed — both broken as of June 2026.
     """
-    import base64
 
-    # 1. imgbb (if key configured)
+    # 1. GitHub raw upload — most reliable, token already available
+    if GITHUB_TOKEN:
+        try:
+            filename = f"cargo_{uuid.uuid4().hex[:8]}.png"
+            with open(image_path, "rb") as f:
+                content_b64 = base64.b64encode(f.read()).decode()
+
+            r = httpx.put(
+                f"https://api.github.com/repos/{GITHUB_REPO}/contents/uploads/{filename}",
+                headers={
+                    "Authorization": f"token {GITHUB_TOKEN}",
+                    "Accept": "application/vnd.github.v3+json",
+                },
+                json={
+                    "message": f"Upload post image {filename}",
+                    "content": content_b64,
+                },
+                timeout=60,
+            )
+            if r.status_code in (200, 201):
+                raw_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/master/uploads/{filename}"
+                logger.info(f"✅ Image uploaded to GitHub: {raw_url}")
+                return raw_url
+            else:
+                logger.warning(f"GitHub upload failed: {r.status_code} {r.text[:200]}")
+        except Exception as e:
+            logger.warning(f"GitHub upload failed: {e}")
+
+    # 2. imgbb (if key configured)
     imgbb_key = os.getenv("IMGBB_API_KEY", "")
     if imgbb_key:
         with open(image_path, "rb") as f:
@@ -115,43 +147,24 @@ def _upload_image(image_path: str) -> str | None:
         except Exception as e:
             logger.warning(f"imgbb failed: {e}")
 
-    # 2. catbox.moe — free, no key needed, widely accepted by Instagram
+    # 3. Imgur — free, no key needed
     try:
         with open(image_path, "rb") as f:
             r = httpx.post(
-                "https://catbox.moe/user/api.php",
-                data={"reqtype": "fileupload"},
-                files={"fileToUpload": ("image.jpg", f, "image/jpeg")},
-                timeout=30,
-            )
-        if r.status_code == 200 and r.text.startswith("https://"):
-            url = r.text.strip()
-            logger.info(f"Image uploaded to catbox.moe: {url}")
-            return url
-        else:
-            logger.warning(f"catbox.moe failed: {r.status_code} {r.text[:100]}")
-    except Exception as e:
-        logger.warning(f"catbox.moe failed: {e}")
-
-    # 3. freeimage.host — free, accepted by Instagram (Imgur removed — blocked by IG)
-    FREEIMAGE_KEY = "6d207e02198a847aa98d0a2a901485a5"
-    try:
-        with open(image_path, "rb") as f:
-            r = httpx.post(
-                "https://freeimage.host/api/1/upload",
-                data={"action": "upload", "key": FREEIMAGE_KEY},
-                files={"source": ("image.jpg", f, "image/jpeg")},
+                "https://api.imgur.com/3/image",
+                headers={"Authorization": "Client-ID 546c25a59c58ad7"},
+                files={"image": ("image.png", f, "image/png")},
                 timeout=30,
             )
         result = r.json()
-        if result.get("status_code") == 200:
-            url = result["image"]["url"]
-            logger.info(f"Image uploaded to freeimage.host: {url}")
+        if result.get("success"):
+            url = result["data"]["link"]
+            logger.info(f"Image uploaded to Imgur: {url}")
             return url
         else:
-            logger.warning(f"freeimage.host failed: {result}")
+            logger.warning(f"Imgur failed: {result}")
     except Exception as e:
-        logger.warning(f"freeimage.host failed: {e}")
+        logger.warning(f"Imgur failed: {e}")
 
     logger.error("All image upload methods failed")
     return None
