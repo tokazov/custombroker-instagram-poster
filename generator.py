@@ -1,37 +1,42 @@
-"""Generate Instagram post text via Claude for Cargo Rapido."""
+"""Generate Instagram post text via Gemini for Cargo Rapido."""
 
 import os
 import json
 import re
 import time
 import logging
-from anthropic import Anthropic
+import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
 
+def _call_gemini_with_retry(prompt: str) -> str:
+    """Call Gemini with retry on transient errors."""
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_KEY", "")
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-2.0-flash")
 
-def _call_claude_with_retry(client, **kwargs):
-    """Call Claude with retry on overload or server errors (500, 529)."""
     for attempt in range(5):
         try:
-            return client.messages.create(**kwargs)
+            response = model.generate_content(prompt)
+            return response.text
         except Exception as e:
             err_str = str(e).lower()
             is_retryable = (
-                "529" in str(e) or
-                "overloaded" in err_str or
+                "429" in str(e) or
+                "quota" in err_str or
                 "500" in str(e) or
-                "internal server error" in err_str or
-                "529" in str(type(e).__name__)
+                "503" in str(e) or
+                "internal" in err_str
             )
             if is_retryable and attempt < 4:
-                wait = 30 * (attempt + 1)
-                print(f"[retry] Anthropic error (attempt {attempt+1}/5), waiting {wait}s... {e}")
+                wait = 20 * (attempt + 1)
+                logger.warning(f"Gemini error (attempt {attempt+1}/5), retrying in {wait}s: {e}")
                 time.sleep(wait)
             else:
                 raise
-    raise Exception("Anthropic API failed after 5 retries")
+    raise Exception("Gemini API failed after 5 retries")
+
 
 def generate_post(topic: dict) -> dict:
     """Generate post text + image params."""
@@ -115,18 +120,7 @@ def generate_post(topic: dict) -> dict:
 {"title": "заголовок для картинки (макс 40 символов, чтобы влез в 1-2 строки)", "subtitle": "подзаголовок или факт (макс 30 символов)", "emoji": "один эмоджи"}
 ```"""
 
-    client = Anthropic(
-        api_key=os.getenv("ANTHROPIC_API_KEY", ""),
-        base_url="https://api.anthropic.com",
-    )
-
-    response = _call_claude_with_retry(client,
-        model="claude-sonnet-4-20250514",
-        max_tokens=1200,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    raw = response.content[0].text
+    raw = _call_gemini_with_retry(prompt)
 
     json_match = re.search(r'```json\s*({.*?})\s*```', raw, re.DOTALL)
     text = raw
@@ -156,4 +150,3 @@ def generate_post(topic: dict) -> dict:
         "stats": topic.get("stats"),
         "points": topic.get("points"),
     }
-
