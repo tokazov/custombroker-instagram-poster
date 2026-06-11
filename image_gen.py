@@ -47,9 +47,26 @@ else:
 
 # Слова которые НЕ должны встречаться в alt/описании фото
 _PHOTO_EXCLUDE_WORDS = {
-    "helicopter", "helicopters", "tractor", "tractors", "farm", "farming",
-    "agriculture", "agricultural", "military", "army", "war", "combat",
-    "harvest", "field crops", "airplane passenger", "jet passenger",
+    # Техника не по теме
+    "helicopter", "helicopters", "tractor", "tractors", "military", "army", "war", "combat",
+    "airplane passenger", "jet passenger",
+    # Сельское хозяйство
+    "farm", "farming", "agriculture", "agricultural", "harvest", "field crops",
+    "crop", "crops", "rice", "wheat", "corn", "vegetable", "vegetables",
+    # Домашнее / декор
+    "flower", "flowers", "floral", "bouquet", "plant", "plants", "garden",
+    "interior", "bedroom", "living room", "furniture", "couch", "sofa",
+    "kitchen", "cooking", "food", "restaurant", "cafe", "coffee",
+    # Люди не по теме
+    "portrait", "selfie", "wedding", "fashion", "model", "woman smiling",
+    "man smiling", "baby", "child", "children", "playground",
+    # Упаковка / косметика / товары
+    "cosmetic", "cosmetics", "makeup", "perfume", "bottle", "jar",
+    "product", "products", "retail", "shop", "shopping", "supermarket",
+    "blue bag", "plastic bag",
+    # Города не в тему
+    "amsterdam", "paris street", "london street", "tokyo street",
+    "beach", "ocean beach", "swimming", "vacation", "tourism",
 }
 
 
@@ -96,6 +113,14 @@ def fetch_photo(keyword: str) -> str | None:
                 photographer = (p.get("photographer") or "").lower()
                 combined = alt + " " + photographer
                 if any(w in combined for w in _PHOTO_EXCLUDE_WORDS):
+                    continue
+                # Дополнительно: фото должно содержать хотя бы одно из ключевых слов логистики
+                logistics_words = {
+                    "truck", "cargo", "freight", "delivery", "shipping", "transport",
+                    "logistics", "warehouse", "container", "highway", "road", "port",
+                    "loading", "vehicle", "semi", "van", "boxes", "moving", "packages",
+                }
+                if not any(w in combined for w in logistics_words):
                     continue
                 result.append(p)
             return result
