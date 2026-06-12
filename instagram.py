@@ -98,30 +98,28 @@ def upload_and_post(image_path: str, caption: str) -> bool:
 
 def _upload_image(image_path: str) -> str | None:
     """Upload image and return public URL accessible by Instagram Graph API.
-    
-    NOTE: raw.githubusercontent.com is BLOCKED by Instagram (error 2207052).
-    Priority: Imgur (reliable, no key needed) → imgbb (if key set) → catbox.moe
-    GitHub upload is used only for archival AFTER successful posting.
+
+    NOTE: Imgur and raw.githubusercontent.com are BLOCKED by Instagram (error 2207052).
+    Priority: catbox.moe → imgbb (if key set) → tmpfiles.org
     """
 
-    # 1. Imgur — free, no key needed, Instagram-compatible
+    # 1. catbox.moe — free public CDN, Instagram-compatible
     try:
         with open(image_path, "rb") as f:
             r = httpx.post(
-                "https://api.imgur.com/3/image",
-                headers={"Authorization": "Client-ID 546c25a59c58ad7"},
-                files={"image": ("image.png", f, "image/png")},
+                "https://catbox.moe/user/api.php",
+                data={"reqtype": "fileupload"},
+                files={"fileToUpload": ("image.png", f, "image/png")},
                 timeout=30,
             )
-        result = r.json()
-        if result.get("success"):
-            url = result["data"]["link"]
-            logger.info(f"✅ Image uploaded to Imgur: {url}")
+        url = r.text.strip()
+        if url.startswith("https://"):
+            logger.info(f"✅ Image uploaded to catbox.moe: {url}")
             return url
         else:
-            logger.warning(f"Imgur failed: {result}")
+            logger.warning(f"catbox.moe failed: {r.text[:100]}")
     except Exception as e:
-        logger.warning(f"Imgur failed: {e}")
+        logger.warning(f"catbox.moe failed: {e}")
 
     # 2. imgbb (if key configured)
     imgbb_key = os.getenv("IMGBB_API_KEY", "")
@@ -137,28 +135,28 @@ def _upload_image(image_path: str) -> str | None:
             result = r.json()
             if result.get("success"):
                 url = result["data"]["url"]
-                logger.info(f"Image uploaded to imgbb: {url}")
+                logger.info(f"✅ Image uploaded to imgbb: {url}")
                 return url
         except Exception as e:
             logger.warning(f"imgbb failed: {e}")
 
-    # 3. catbox.moe — free, public CDN, no auth
+    # 3. tmpfiles.org — fallback public CDN
     try:
         with open(image_path, "rb") as f:
             r = httpx.post(
-                "https://catbox.moe/user/api.php",
-                data={"reqtype": "fileupload"},
-                files={"fileToUpload": ("image.png", f, "image/png")},
+                "https://tmpfiles.org/api/v1/upload",
+                files={"file": ("image.png", f, "image/png")},
                 timeout=30,
             )
-        url = r.text.strip()
-        if url.startswith("https://"):
-            logger.info(f"Image uploaded to catbox.moe: {url}")
+        result = r.json()
+        if result.get("status") == "success":
+            url = result["data"]["url"].replace("tmpfiles.org/", "tmpfiles.org/dl/")
+            logger.info(f"✅ Image uploaded to tmpfiles.org: {url}")
             return url
         else:
-            logger.warning(f"catbox.moe failed: {r.text[:100]}")
+            logger.warning(f"tmpfiles.org failed: {result}")
     except Exception as e:
-        logger.warning(f"catbox.moe failed: {e}")
+        logger.warning(f"tmpfiles.org failed: {e}")
 
     logger.error("All image upload methods failed")
     return None
