@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 PAGE_TOKEN = os.getenv("FB_PAGE_TOKEN", "")
 IG_ACCOUNT_ID = os.getenv("IG_ACCOUNT_ID", "")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
-GITHUB_REPO = "tokazov/cargo-instagram-poster"
+GITHUB_REPO = "tokazov/cargo-ig-uploads"  # PUBLIC repo for Instagram-accessible images
 
 
 def upload_and_post(image_path: str, caption: str) -> bool:
@@ -121,11 +121,10 @@ def _upload_image(image_path: str) -> str | None:
                 timeout=60,
             )
             if r.status_code in (200, 201):
-                # Use jsDelivr CDN — Instagram-compatible (unlike raw.githubusercontent.com)
-                cdn_url = f"https://cdn.jsdelivr.net/gh/{GITHUB_REPO}@master/uploads/{filename}"
-                logger.info(f"✅ Image uploaded to GitHub/jsDelivr: {cdn_url}")
-                # Wait a moment for jsDelivr to propagate
-                time.sleep(3)
+                # Use raw.githubusercontent.com — works for PUBLIC repos
+                cdn_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/uploads/{filename}"
+                logger.info(f"✅ Image uploaded to GitHub (public): {cdn_url}")
+                time.sleep(2)
                 return cdn_url
             else:
                 logger.warning(f"GitHub upload failed: {r.status_code} {r.text[:100]}")
