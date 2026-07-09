@@ -97,39 +97,28 @@ def upload_and_post(image_path: str, caption: str) -> bool:
 def _upload_image(image_path: str) -> str | None:
     """Upload image and return public URL accessible by Instagram Graph API.
 
-    Priority: GitHub raw (jsDelivr CDN) → imgbb → catbox.moe
-    NOTE: Imgur and raw.githubusercontent.com are BLOCKED by Instagram (error 2207052).
-    jsDelivr CDN (cdn.jsdelivr.net/gh/...) serves GitHub content and is Instagram-compatible.
+    Priority: catbox.moe → imgbb → GitHub (Cloudinary-style)
+    NOTE: Imgur, raw.githubusercontent.com, jsDelivr (cdn.jsdelivr.net) are ALL BLOCKED by Instagram (error 2207052).
+    catbox.moe is free and Instagram-compatible.
     """
 
-    # 1. GitHub + jsDelivr CDN — most reliable for Instagram
-    if GITHUB_TOKEN:
-        try:
-            filename = f"temp_{uuid.uuid4().hex[:8]}.png"
-            with open(image_path, "rb") as f:
-                content_b64 = base64.b64encode(f.read()).decode()
-            r = httpx.put(
-                f"https://api.github.com/repos/{GITHUB_REPO}/contents/uploads/{filename}",
-                headers={
-                    "Authorization": f"token {GITHUB_TOKEN}",
-                    "Accept": "application/vnd.github.v3+json",
-                },
-                json={
-                    "message": f"Upload post image {filename}",
-                    "content": content_b64,
-                },
-                timeout=60,
+    # 1. catbox.moe — free public CDN, works with Instagram
+    try:
+        with open(image_path, "rb") as f:
+            r = httpx.post(
+                "https://catbox.moe/user/api.php",
+                data={"reqtype": "fileupload"},
+                files={"fileToUpload": ("image.png", f, "image/png")},
+                timeout=30,
             )
-            if r.status_code in (200, 201):
-                # Use raw.githubusercontent.com — works for PUBLIC repos
-                cdn_url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/uploads/{filename}"
-                logger.info(f"✅ Image uploaded to GitHub (public): {cdn_url}")
-                time.sleep(2)
-                return cdn_url
-            else:
-                logger.warning(f"GitHub upload failed: {r.status_code} {r.text[:100]}")
-        except Exception as e:
-            logger.warning(f"GitHub upload failed: {e}")
+        url = r.text.strip()
+        if url.startswith("https://"):
+            logger.info(f"✅ Image uploaded to catbox.moe: {url}")
+            return url
+        else:
+            logger.warning(f"catbox.moe failed: {r.text[:100]}")
+    except Exception as e:
+        logger.warning(f"catbox.moe failed: {e}")
 
     # 2. imgbb (if key configured)
     imgbb_key = os.getenv("IMGBB_API_KEY", "")
@@ -149,24 +138,6 @@ def _upload_image(image_path: str) -> str | None:
                 return url
         except Exception as e:
             logger.warning(f"imgbb failed: {e}")
-
-    # 3. catbox.moe — free public CDN
-    try:
-        with open(image_path, "rb") as f:
-            r = httpx.post(
-                "https://catbox.moe/user/api.php",
-                data={"reqtype": "fileupload"},
-                files={"fileToUpload": ("image.png", f, "image/png")},
-                timeout=30,
-            )
-        url = r.text.strip()
-        if url.startswith("https://"):
-            logger.info(f"✅ Image uploaded to catbox.moe: {url}")
-            return url
-        else:
-            logger.warning(f"catbox.moe failed: {r.text[:100]}")
-    except Exception as e:
-        logger.warning(f"catbox.moe failed: {e}")
 
     logger.error("All image upload methods failed")
     return None
