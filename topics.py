@@ -268,9 +268,6 @@ OTHER_TOPICS = [
      "emoji": "🇺🇿➡️🇬🇪", "subtitle": "Ташкент → Тбилиси", "fact": "от 10 дней"},
     {"id": "az-ge", "title_hint": "Доставка из Азербайджана в Грузию", "niche": "road", "type": "route",
      "emoji": "🇦🇿➡️🇬🇪", "subtitle": "Баку → Тбилиси", "fact": "от 2 дней"},
-    {"id": "ge-ua", "title_hint": "Доставка из Грузии в Украину", "niche": "road", "type": "route",
-     "emoji": "🇬🇪➡️🇺🇦", "subtitle": "Тбилиси → Киев", "fact": "от 5 дней"},
-
     # Дальние
     {"id": "cn-ge", "title_hint": "Доставка из Китая в Грузию", "niche": "sea", "type": "route",
      "emoji": "🇨🇳➡️🇬🇪", "subtitle": "Авиа и морем", "fact": "от 15 дней"},
@@ -381,3 +378,4 @@ def get_random_topic() -> dict:
 def get_photo_keyword(niche: str) -> str:
     keywords = PHOTO_KEYWORDS.get(niche, PHOTO_KEYWORDS["delivery"])
     return random.choice(keywords)
+
