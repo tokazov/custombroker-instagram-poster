@@ -40,7 +40,7 @@ if _COLOR_SCHEME == "red":
     CTA_COLOR = (185, 28, 28)        # dark red
 else:
     ACCENT_BLUE = (59, 130, 246)     # #3b82f6
-    ACCENT_ORANGE = (249, 115, 22)   # #f97316 — cargo/logistics vibe
+    ACCENT_ORANGE = (16, 185, 129)   # #10b981 — customs/broker green
     ACCENT_YELLOW = (250, 204, 21)   # #facc15
     CTA_COLOR = ACCENT_BLUE
 
