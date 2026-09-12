@@ -97,13 +97,37 @@ def upload_and_post(image_path: str, caption: str) -> bool:
 def _upload_image(image_path: str) -> str | None:
     """Upload image and return public URL accessible by Instagram Graph API.
 
-    Priority: catbox.moe → imgbb → freeimage.host
+    Priority: GitHub (public repo) → catbox.moe → imgbb → freeimage.host
     NOTE: Imgur, raw.githubusercontent.com, jsDelivr (cdn.jsdelivr.net) are ALL BLOCKED by Instagram (error 2207052).
     NOTE: freeimage.host (iili.io) is now BLOCKED by Instagram (error 2207052, Aug 2026).
-    catbox.moe is free and Instagram-compatible.
+    NOTE: catbox.moe is unstable (fails with 412 Invalid uploader).
+    GitHub via statically.io CDN is stable and Instagram-compatible.
     """
 
-    # 1. catbox.moe — free, Instagram-compatible CDN
+    # 1. GitHub public repo via statically.io CDN (Instagram-compatible, stable)
+    gh_token = GITHUB_TOKEN
+    if gh_token:
+        try:
+            import uuid as _uuid
+            fname = f"{_uuid.uuid4().hex}.png"
+            with open(image_path, "rb") as f:
+                b64_content = base64.b64encode(f.read()).decode()
+            r = httpx.put(
+                f"https://api.github.com/repos/tokazov/cargo-ig-uploads/contents/{fname}",
+                json={"message": f"img {fname}", "content": b64_content},
+                headers={"Authorization": f"token {gh_token}", "Accept": "application/vnd.github.v3+json"},
+                timeout=30,
+            )
+            if r.status_code in (200, 201):
+                raw_url = f"https://cdn.statically.io/gh/tokazov/cargo-ig-uploads/main/{fname}"
+                logger.info(f"✅ Image uploaded to GitHub/statically: {raw_url}")
+                return raw_url
+            else:
+                logger.warning(f"GitHub upload failed: {r.status_code} {r.text[:100]}")
+        except Exception as e:
+            logger.warning(f"GitHub upload failed: {e}")
+
+    # 2. catbox.moe — fallback
     try:
         with open(image_path, "rb") as f:
             r = httpx.post(
